@@ -8,7 +8,7 @@ const blackSquareGrey = '#696969'
 
 let ai = new Ai()
 
-let game = {
+let Game = {
   turn: 'w',
   newPosition: {},
   player:'w' ,
@@ -25,6 +25,7 @@ let config = {
   onDragStart: onDragStart,
   onDrop: onDrop,
   onSnapEnd: onSnapEnd,
+  onChange: onChange,
   moveSpeed: 'slow',
   pieceTheme: 'img/{piece}.png'
 };
@@ -46,15 +47,15 @@ function changeColor(square, piece, white, black){
 }
 
 function onMouseoverSquare(square, piece){
-  if (piece !== false && piece[0] == game.turn) changeColor(square, piece, whiteSquareGrey, blackSquareGrey)
+  if (piece !== false && piece[0] == Game.turn) changeColor(square, piece, whiteSquareGrey, blackSquareGrey)
 }
 
 function onMouseoutSquare(square, piece){
-  if (piece !== false && piece[0] == game.turn) changeColor(square, piece, whiteSquare, blackSquare)
+  if (piece !== false && piece[0] == Game.turn) changeColor(square, piece, whiteSquare, blackSquare)
 }
 
 function onDragStart(source, piece){
-  if (piece[0] !== game.player) return false
+  if (piece[0] !== Game.player) return false
 }
 function onDrop(source, target, piece, newPos){
   let current = window[source + piece]
@@ -67,20 +68,41 @@ function onDrop(source, target, piece, newPos){
       delete window[target + board.position()[target]]
     }
     createPiece(target, piece)
-    game.changeTurn()
-    game.newPosition = newPos
-    game.next = ai.move(game.newPosition)
+    Game.changeTurn()
+    Game.newPosition = newPos
+    Game.next = ai.move(Game.newPosition)
   }
   else return 'snapback'
 }
 
 function onSnapEnd(source, target, piece){
-  /* DO POPRAWY */
-  if (game.turn == 'b'){
-    board.move(game.next[0])
-    piece = game.next[1]
-    target = game.next[0].slice(3)
+  promotion(target, piece)
+  if (Game.turn == 'b'){
+    board.move(Game.next[0])
+    piece = Game.next[1]
+    target = Game.next[0].slice(3)
   }
+  Game.changeTurn()
+  promotion(target, piece)
+}
+
+function onChange(oldPos, newPos){
+  const pieces = Object.values(newPos)
+  if(!pieces.includes('bK') || !pieces.includes('wK')){
+    config = {
+      draggable: false,
+      position: newPos,
+      pieceTheme: 'img/{piece}.png'
+    }
+    Chessboard('board', config)
+    let winner
+    if(Game.turn = 'b') winner = 'black'
+    else winner = 'white'
+    document.querySelector('.status').innerText = `${winner} won`
+  } 
+}
+
+function promotion(target, piece){
   if (piece[1] == 'P' &&
     (target[1] == 8 || target[1] == 1)) {
       
@@ -91,7 +113,6 @@ function onSnapEnd(source, target, piece){
       board.position(updatedBoard)
       delete window[target + piece[0] + 'P']
     }
-  game.changeTurn()
 }
 
 function createPiece(position, pieceName){
@@ -102,13 +123,34 @@ function createPiece(position, pieceName){
   if (type == 'K') window[position + pieceName] = new King(position, color)
 };
 
-(function(){
+function createObjects(){
   let pos = board.position()
   let places = Object.keys(pos)
   let pieces = Object.values(pos)
   let len = Object.keys(pos).length
 
-    for(let i = 0; i < len; i++){
-      createPiece(places[i], pieces[i])
-    }
-  })();  
+  for(let i = 0; i < len; i++){
+    createPiece(places[i], pieces[i])
+  }
+};  
+createObjects()
+const button = document.querySelector('#newGame')
+button.addEventListener('click', 
+  function(){
+    config = {
+      draggable: true,
+      position: '3qk3/8/pppppppp/8/8/PPPPPPPP/8/3QK3',
+      onMouseoverSquare: onMouseoverSquare,
+      onMouseoutSquare: onMouseoutSquare,
+      onDragStart: onDragStart,
+      onDrop: onDrop,
+      onSnapEnd: onSnapEnd,
+      onChange: onChange,
+      moveSpeed: 'slow',
+      pieceTheme: 'img/{piece}.png'
+    };
+    board = Chessboard('board', config)
+    document.querySelector('.status').innerText = ``
+    createObjects()
+  }
+)

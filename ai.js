@@ -41,11 +41,14 @@ export default class Ai{
     bK : this.white['wK'].slice().reverse()
   }
   nextMove = ''
+
+
   evaluate(board){
     let whites = this.filter(board, 'w')
     let blacks = this.filter(board, 'b')
     return this.points('w', whites) + this.points('b', blacks)
   }
+
   points(color, posObject){
     let sum = 0
     for (const [key, value] of Object.entries(posObject)){
@@ -57,6 +60,7 @@ export default class Ai{
     }
     return sum
   }
+
   filter(board, color){
     let obj = {}
     for (const [key, value] of Object.entries(board)){
@@ -64,14 +68,7 @@ export default class Ai{
     }
     return obj
   }
-  legalMoves(currentBoard){
-    let places = Object.keys(currentBoard)
-    let pieces = Object.values(currentBoard)
-    let len = Object.keys(currentBoard).length
 
-    for(let i = 0; i < len; i++){
-    }
-  }
   createPiece(position, pieceName){
     let color = pieceName[0]
     let type = pieceName[1]
@@ -79,11 +76,13 @@ export default class Ai{
     if (type == 'Q') return new Queen(position, color)
     if (type == 'K') return new King(position, color)
   }
+
   updateBoard(board, source, target, piece){
     delete board[source]
     board[target] = piece
     return board
   }
+  
   minimax(position, depth, alpha, beta, player){
     if(depth == 0) return this.evaluate(position)
 
@@ -97,7 +96,8 @@ export default class Ai{
           newPosition[elem] = value
           delete newPosition[key]
           let next = this.minimax(newPosition, depth - 1, alpha, beta, 'b')
-          if(depth == 4 && maxEval < next) this.nextMove = [key+'-'+elem, value]
+          //     wybiera najlepszy ruch dla białcych
+          if(depth == this.depth && maxEval < next) this.nextMove = [key+'-'+elem, value]
           maxEval = Math.max(maxEval, next)
           alpha = Math.max(maxEval, alpha)
           if (beta <= alpha) return
@@ -116,7 +116,8 @@ export default class Ai{
           newPosition[elem] = value
           delete newPosition[key]
           let next = this.minimax(newPosition, depth - 1, alpha, beta, 'w')
-          if(depth == 4 && minEval > next) this.nextMove = [key+'-'+elem, value]
+          //     wybiera najlepszy ruch dla czarnych
+          if(depth == this.depth && minEval > next) this.nextMove = [key+'-'+elem, value]
           minEval = Math.min(minEval, next)
           beta = Math.min(minEval, beta)
           if (beta <= alpha) return
@@ -126,8 +127,8 @@ export default class Ai{
     }
   }
   move(currentBoard){
-    this.minimax(currentBoard, 4, -Infinity, Infinity, 'b')
+    this.depth = 4
+    this.minimax(currentBoard, this.depth, -Infinity, Infinity, 'b')
     return this.nextMove
-    // this.makeaMove(whitePieces, blackPieces)
   }
 }

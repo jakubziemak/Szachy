@@ -46,7 +46,6 @@ class Pawn extends Piece{
         updatedBoard[this.position] = this.color + 'Q'
         console.log(context)
         delete window[this.position + this.color + 'P']
-        // return updatedBoard
       }
     }
   }
