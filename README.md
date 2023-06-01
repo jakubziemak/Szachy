@@ -1,5 +1,5 @@
 # Szachy
 
-Strona jest hostowana [tutaj](https://szachy0.herokuapp.com/)
+Strona jest hostowana [tutaj](https://jakubziemak.github.io/Szachy/)
   
 Jakub Ziemak
